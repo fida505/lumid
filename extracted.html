@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumid AI — Emotional Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Core Palette */
+  --stone:#FAFAFA;
+  --bone:#F3F1EE;
+  --slate:#1C2E3E;
+  --slate-mid:#2D4459;
+  --slate-light:#4A6478;
+  --sage:#A5BDA8;
+  --sage-dark:#7A9E7E;
+  --amber:#F6BE00;
+  --coral:#FA6E6E;
+  --ink:#111820;
+  --muted:#8A9BAB;
+  --border:#E5E2DC;
+  --border-strong:#CFC9BF;
+  --card:#FFFFFF;
+  --card-raised:#FDFCFB;
+
+  /* Semantic */
+  --critical-bg:#FFF3F3;
+  --critical-border:#FAC5C5;
+  --critical-text:#C0392B;
+  --watch-bg:#FFFBEE;
+  --watch-border:#F6E077;
+  --watch-text:#856A00;
+  --stable-bg:#F2F9F3;
+  --stable-border:#A8D5AE;
+  --stable-text:#1E6B30;
+
+  /* Motion */
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease:cubic-bezier(0.25,0.46,0.45,0.94);
+  --ease-out:cubic-bezier(0.0,0.0,0.2,1);
+
+  /* Structure */
+  --sidebar-w:260px;
+  --right-w:300px;
+  --r:10px;
+  --r-sm:6px;
+  --r-lg:14px;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--stone);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+
+/* ── LAYOUT ── */
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr var(--right-w);min-height:100vh}
+.sidebar{background:var(--slate);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:2px 0 24px rgba(0,0,0,.18)}
+.main-col{display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+.right-col{background:var(--bone);border-left:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+
+/* ── SIDEBAR ── */
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-brand{display:flex;align-items:center;gap:11px}
+.sb-gem{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6BAED6 0%,#3A7FC1 50%,#2C5F8A 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,174,214,.4)}
+.sb-gem svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2}
+.sb-wordmark{font-family:'Instrument Serif',serif;color:#fff;font-size:19px;letter-spacing:-.01em}
+.sb-tagline{font-size:9.5px;color:rgba(255,255,255,.28);letter-spacing:.14em;text-transform:uppercase;margin-top:1px}
+
+.sb-section{padding:20px 16px 0}
+.sb-section-label{font-size:9px;color:rgba(255,255,255,.25);letter-spacing:.18em;text-transform:uppercase;padding:0 4px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.sb-section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
+
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);color:rgba(255,255,255,.5);cursor:pointer;transition:all 180ms var(--ease);font-size:13px;margin-bottom:1px;position:relative;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.sb-item.active{background:rgba(255,255,255,.11);color:#fff;font-weight:500}
+.sb-item.active::before{content:'';position:absolute;left:0;top:25%;height:50%;width:2.5px;background:linear-gradient(180deg,var(--sage),#6BAED6);border-radius:0 2px 2px 0}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;opacity:.75}
+.sb-pill{margin-left:auto;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;line-height:1.5}
+.sb-pill.red{background:rgba(250,110,110,.25);color:#FA6E6E}
+.sb-pill.amber{background:rgba(246,190,0,.2);color:var(--amber)}
+
+.sb-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,.07);margin-top:auto}
+.sb-user{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background 150ms}
+.sb-user:hover{background:rgba(255,255,255,.06)}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--sage),#6BAED6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--slate);flex-shrink:0}
+.sb-user-name{font-size:12.5px;color:#fff;font-weight:500}
+.sb-user-role{font-size:10.5px;color:rgba(255,255,255,.3)}
+.sb-status{width:7px;height:7px;border-radius:50%;background:#52D98E;margin-left:auto;box-shadow:0 0 0 2px rgba(82,217,142,.25)}
+
+/* ── TOPBAR ── */
+.topbar{height:58px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:'Instrument Serif',serif;font-size:18px;color:var(--slate);letter-spacing:-.01em}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.breadcrumb-sep{opacity:.4}
+
+.search{display:flex;align-items:center;gap:8px;background:var(--bone);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 12px;cursor:text;transition:all 150ms;min-width:280px}
+.search:focus-within{border-color:var(--slate-light);background:#fff;box-shadow:0 0 0 3px rgba(28,46,62,.07)}
+.search svg{width:14px;height:14px;stroke:var(--muted);flex-shrink:0}
+.search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;color:var(--ink);width:100%}
+.search input::placeholder{color:var(--muted)}
+.search kbd{background:var(--border);border-radius:4px;padding:1px 5px;font-size:10.5px;color:var(--muted);font-family:monospace;margin-left:auto;flex-shrink:0}
+
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.icon-btn{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 150ms;position:relative;color:var(--slate-mid)}
+.icon-btn:hover{background:var(--bone);border-color:var(--border-strong)}
+.icon-btn svg{width:15px;height:15px;stroke:currentColor}
+.notif-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;background:var(--coral);border-radius:50%;border:1.5px solid var(--card)}
+
+/* ── CONTENT ── */
+.content{padding:24px;flex:1}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block;animation:revealUp 220ms var(--ease) both}
+@keyframes revealUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── STAT ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.stat-tile{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;transition:box-shadow 200ms,transform 200ms var(--spring)}
+.stat-tile:hover{box-shadow:0 6px 20px rgba(28,46,62,.09);transform:translateY(-2px)}
+.st-eyebrow{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.st-num{font-family:'Instrument Serif',serif;font-size:34px;color:var(--slate);line-height:1;letter-spacing:-.02em}
+.st-unit{font-size:13px;color:var(--muted);margin-left:2px}
+.st-trend{font-size:11.5px;margin-top:6px;display:flex;align-items:center;gap:3px}
+.trend-pos{color:#1E6B30}
+.trend-neg{color:var(--critical-text)}
+.trend-neu{color:var(--muted)}
+.st-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
+.st-bar-fill{height:100%;border-radius:2px;transition:width 600ms var(--ease)}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-chip{border:1px solid var(--border);background:var(--card);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;color:var(--slate-mid);transition:all 150ms;font-family:inherit;font-weight:400;display:inline-flex;align-items:center;gap:5px}
+.filter-chip:hover{border-color:var(--slate-light);color:var(--slate)}
+.filter-chip.on{background:var(--slate);color:#fff;border-color:var(--slate)}
+.filter-sep{width:1px;height:20px;background:var(--border)}
+.view-toggle{display:flex;gap:1px;background:var(--bone);border-radius:var(--r-sm);padding:2px;border:1px solid var(--border)}
+.vt-btn{padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--muted);transition:all 120ms;border:none;background:none;font-family:inherit}
+.vt-btn.on{background:var(--card);color:var(--slate);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ── PATIENT CARDS ── */
+.pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+
+.pt-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;cursor:pointer;transition:all 200ms var(--ease);position:relative;overflow:hidden}
+.pt-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background 200ms}
+.pt-card.flagged-today{animation:cardGlow 3s ease-in-out infinite}
+@keyframes cardGlow{0%,100%{box-shadow:0 0 0 0 rgba(250,110,110,0)}50%{box-shadow:0 0 0 4px rgba(250,110,110,.12),0 4px 20px rgba(250,110,110,.08)}}
+.pt-card.flagged-today::before{background:linear-gradient(90deg,var(--coral),#FF9090)}
+.pt-card.watch-card::before{background:linear-gradient(90deg,var(--amber),#FFD740)}
+.pt-card:hover{box-shadow:0 8px 28px rgba(28,46,62,.12);transform:translateY(-3px)}
+.pt-card:hover .flyout-trigger{opacity:1}
+
+.pt-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:14px}
+.pt-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:16px;flex-shrink:0;position:relative}
+.pt-av-ring{position:absolute;inset:-3px;border-radius:50%;border:2px dashed transparent;animation:spin 8s linear infinite}
+.pt-av-ring.critical{border-color:rgba(192,57,43,.35)}
+.pt-av-ring.watch{border-color:rgba(246,190,0,.4)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pt-info{flex:1;min-width:0}
+.pt-name{font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt-arc{font-size:11.5px;color:var(--slate-light);margin-top:1px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Risk Pills */
+.risk-pill{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.risk-pill.critical{background:var(--critical-bg);color:var(--critical-text);border:1px solid var(--critical-border)}
+.risk-pill.critical .rp-dot{background:var(--critical-text);animation:rp-pulse 1.5s infinite}
+.risk-pill.watch{background:var(--watch-bg);color:var(--watch-text);border:1px solid var(--watch-border)}
+.risk-pill.watch .rp-dot{background:var(--watch-text)}
+.risk-pill.stable{background:var(--stable-bg);color:var(--stable-text);border:1px solid var(--stable-border)}
+.risk-pill.stable .rp-dot{background:var(--stable-text)}
+.rp-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+@keyframes rp-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.6)}}
+
+/* Spark */
+.spark-wrap{height:40px;margin:10px 0 8px;position:relative}
+.spark-label{position:absolute;top:0;right:0;font-size:10px;color:var(--muted)}
+
+/* Emotions */
+.emo-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.emo-tag{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:2px 8px;font-size:11px;cursor:default;transition:transform 150ms var(--spring);position:relative}
+.emo-tag:hover{transform:scale(1.08)}
+.emo-tag::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:var(--slate);color:#fff;font-size:10.5px;padding:4px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 150ms;z-index:10}
+.emo-tag:hover::after{opacity:1}
+.emo-int{display:inline-flex;gap:1px;margin-left:2px}
+.emo-int-dot{width:3px;height:3px;border-radius:50%}
+
+/* Polarity */
+.polarity-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.polarity-label{font-size:10.5px;color:var(--muted);flex-shrink:0}
+.polarity-track{flex:1;height:5px;background:var(--border);border-radius:3px;position:relative;overflow:visible}
+.polarity-center{position:absolute;left:50%;top:-1px;width:1px;height:7px;background:var(--border-strong)}
+.polarity-fill{position:absolute;top:0;height:100%;border-radius:3px;transition:all 400ms var(--ease)}
+.polarity-score{font-size:11.5px;font-weight:600;flex-shrink:0;min-width:28px;text-align:right}
+
+/* Behavior tag */
+.behavior-tag{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;padding:5px 0}
+.behavior-tag svg{width:11px;height:11px;stroke:currentColor;flex-shrink:0}
+
+/* Card footer */
+.pt-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.pt-check-time{font-size:11px;color:var(--muted)}
+.micro-actions{display:flex;gap:5px}
+.micro-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 150ms var(--spring)}
+.micro-btn:hover{transform:scale(1.2)}
+.micro-btn.positive:hover{background:var(--stable-bg);border-color:var(--stable-border)}
+.micro-btn.alert:hover{background:var(--watch-bg);border-color:var(--watch-border)}
+.flyout-trigger{opacity:0;transition:opacity 150ms;font-size:10.5px;color:var(--slate-light);display:flex;align-items:center;gap:3px;cursor:pointer}
+.flyout-trigger:hover{color:var(--slate)}
+.flyout-trigger svg{width:10px;height:10px;stroke:currentColor}
+
+/* ── FLYOUT PANEL ── */
+.flyout-overlay{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity 200ms}
+.flyout-overlay.open{opacity:1;pointer-events:all}
+.flyout-bg{position:absolute;inset:0;background:rgba(28,46,62,.3);backdrop-filter:blur(2px)}
+.flyout{position:absolute;top:0;right:0;height:100%;width:440px;background:var(--card);box-shadow:-8px 0 40px rgba(0,0,0,.18);transform:translateX(100%);transition:transform 300ms var(--ease-out);overflow-y:auto;display:flex;flex-direction:column}
+.flyout-overlay.open .flyout{transform:translateX(0)}
+.flyout-head{padding:22px 24px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:1}
+.flyout-body{padding:20px 24px;flex:1;display:flex;flex-direction:column;gap:18px}
+.flyout-close{position:absolute;top:18px;right:18px;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 150ms}
+.flyout-close:hover{background:var(--bone)}
+.flyout-close svg{width:13px;height:13px;stroke:var(--muted);stroke-width:2.5}
+
+.fl-section{margin-bottom:2px}
+.fl-sec-title{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:500}
+.fl-insight{background:var(--bone);border-radius:var(--r-sm);padding:12px;border:1px solid var(--border);margin-bottom:7px}
+.fl-insight-label{font-size:11px;color:var(--slate-light);margin-bottom:4px;font-weight:500}
+.fl-insight-text{font-size:12.5px;color:var(--ink);line-height:1.55}
+.fl-ai-trace{background:linear-gradient(135deg,#F0F7FF,#EBF4FF);border:1px solid #C8DFF7;border-radius:var(--r-sm);padding:12px}
+.fl-ai-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#3A6EA5;margin-bottom:6px;font-weight:600}
+.fl-ai-text{font-size:12px;color:#1A3A5C;line-height:1.6}
+
+/* ── RIGHT COLUMN — PRACTICE INTEL ── */
+.rc-head{padding:18px 18px 14px;border-bottom:1px solid var(--border)}
+.rc-title{font-family:'Instrument Serif',serif;font-size:15px;color:var(--slate);margin-bottom:1px}
+.rc-sub{font-size:11px;color:var(--muted)}
+.rc-section{padding:16px 18px;border-bottom:1px solid var(--border)}
+.rc-sec-label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:600}
+
+.tipping-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tipping-item:last-child{border-bottom:none}
+.ti-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.ti-name{font-size:12.5px;font-weight:500;color:var(--ink)}
+.ti-signal{font-size:11px;color:var(--muted)}
+.ti-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px}
+
+.pattern-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pattern-label{font-size:12px;color:var(--ink);flex:1}
+.pattern-bar-wrap{width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0}
+.pattern-bar-fill{height:100%;border-radius:3px}
+.pattern-count{font-size:11px;color:var(--muted);width:24px;text-align:right;flex-shrink:0}
+
+.burnout-gauge{position:relative;padding:12px 0}
+.burnout-arc{display:flex;justify-content:center}
+.burnout-label{text-align:center;margin-top:8px}
+.burnout-score{font-family:'Instrument Serif',serif;font-size:28px;color:var(--slate)}
+.burnout-desc{font-size:11.5px;color:var(--muted)}
+
+.escalation-latency{display:flex;flex-direction:column;gap:6px}
+.el-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.el-item:last-child{border-bottom:none}
+.el-name{font-size:12px;color:var(--ink)}
+.el-time{font-size:12px;font-weight:500}
+
+/* ── TIMELINE VIEW ── */
+.tl-layout{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start}
+.tl-chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+.tl-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.tl-patient{display:flex;align-items:center;gap:10px}
+.tl-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-family:'Instrument Serif',serif}
+.chart-wrap{height:200px}
+.legend-row{display:flex;gap:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)}
+.leg-line{width:14px;height:2.5px;border-radius:2px}
+
+.pattern-tags-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-top:14px}
+.ptag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.ptag{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r-sm);padding:4px 10px;font-size:12px;font-weight:500;cursor:pointer;transition:transform 130ms var(--spring)}
+.ptag:hover{transform:scale(1.05)}
+.ptag.avoidance{background:#FFF8E1;color:#7A5C00;border:1px solid #F0D060}
+.ptag.shame{background:#FFF0F5;color:#8B0038;border:1px solid #F4A6C0}
+.ptag.catastrophe{background:#FFF3EE;color:#8B3500;border:1px solid #FFAB76}
+.ptag.positive{background:#F0FFF4;color:#1E6B30;border:1px solid #86C49B}
+.ptag.neutral{background:var(--bone);color:var(--slate-mid);border:1px solid var(--border)}
+
+.reasoning-box{background:linear-gradient(135deg,#F6F9FF,#EFF3FF);border:1px solid #D0DCF7;border-radius:var(--r-sm);padding:13px}
+.rb-label{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#4A6FC0;margin-bottom:6px;font-weight:600}
+.rb-text{font-size:12.5px;color:#1C2E5C;line-height:1.65}
+
+/* Timeline sidebar */
+.tl-side{display:flex;flex-direction:column;gap:12px}
+.tl-side-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px}
+
+/* ── ALERTS VIEW ── */
+.alerts-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
+.alert-item{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);margin-bottom:8px;cursor:pointer;transition:all 150ms;position:relative;overflow:hidden}
+.alert-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.alert-item.critical::before{background:var(--coral)}
+.alert-item.warning::before{background:var(--amber)}
+.alert-item.info::before{background:var(--sage)}
+.alert-item:hover{border-color:var(--border-strong);box-shadow:0 3px 14px rgba(28,46,62,.08)}
+.ai-sev{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ai-sev.critical{background:var(--coral)}
+.ai-sev.warning{background:var(--amber)}
+.ai-sev.info{background:var(--sage-dark)}
+.ai-body{flex:1}
+.ai-patient{font-size:11px;color:var(--muted);margin-bottom:2px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.ai-title{font-weight:500;font-size:13.5px;color:var(--ink)}
+.ai-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.ai-cluster{display:inline-flex;align-items:center;gap:3px;margin-top:6px;background:var(--bone);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:10.5px;color:var(--slate-mid)}
+.ai-time{font-size:10.5px;color:var(--muted);white-space:nowrap;padding-top:2px}
+.ai-actions{display:flex;gap:5px;margin-top:8px}
+.aib{border:1px solid var(--border);background:none;border-radius:var(--r-sm);padding:3px 9px;font-size:11.5px;cursor:pointer;color:var(--slate-mid);font-family:inherit;transition:all 120ms}
+.aib:hover{background:var(--slate);color:#fff;border-color:var(--slate)}
+.aib.red{border-color:rgba(192,57,43,.3);color:var(--critical-text)}
+.aib.red:hover{background:var(--critical-text);color:#fff;border-color:var(--critical-text)}
+
+/* ── INSIGHTS VIEW ── */
+.ins-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.ins-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:14px}
+.ins-plan-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.conf-strip{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.conf-fill{height:100%;background:linear-gradient(90deg,var(--sage-dark),var(--sage))}
+.conf-label{font-size:10.5px;color:var(--muted)}
+.goal-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background 120ms}
+.goal-item:last-child{border-bottom:none}
+.goal-check{width:18px;height:18px;border:2px solid var(--border);border-radius:50%;flex-shrink:0;margin-top:1px;transition:all 150ms;display:flex;align-items:center;justify-content:center}
+.goal-check.done{background:var(--slate);border-color:var(--slate)}
+.goal-check.done::after{content:'';display:block;width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg);margin-top:-1px;border-radius:1px}
+.goal-text{font-size:13px;color:var(--ink);line-height:1.5}
+.goal-text.done{text-decoration:line-through;color:var(--muted)}
+
+.prompt-card{background:linear-gradient(135deg,#F5F2FF,#EEF0FF);border:1px solid #D8D0F5;border-radius:var(--r-sm);padding:13px;margin-bottom:8px;cursor:pointer;transition:all 150ms}
+.prompt-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.07)}
+.prompt-text{font-size:13px;color:var(--slate);font-style:italic;line-height:1.6}
+.prompt-cat{font-size:10.5px;color:var(--muted);margin-top:4px}
+
+.soap-field{margin-bottom:11px}
+.soap-label{font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.soap-textarea{width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px;font-family:inherit;font-size:13px;line-height:1.6;color:var(--ink);background:var(--bone);resize:none;transition:all 150ms;outline:none}
+.soap-textarea:focus{border-color:var(--slate-light);background:#fff;box-shadow:0 0 0 3px rgba(28,46,62,.06)}
+
+/* ── BUTTONS ── */
+.btn{border:none;border-radius:var(--r-sm);padding:8px 16px;font-family:inherit;font-size:13px;cursor:pointer;transition:all 150ms var(--ease);display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.btn-primary{background:var(--slate);color:#fff}
+.btn-primary:hover{background:var(--slate-mid);box-shadow:0 4px 14px rgba(28,46,62,.25)}
+.btn-ghost{background:none;color:var(--slate-mid);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bone);border-color:var(--border-strong)}
+.btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5}
+
+/* ── CHAT VIEW ── */
+.chat-layout{display:grid;grid-template-columns:1fr 260px;gap:18px}
+.chat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px}
+.chat-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.chat-stream{padding:18px;display:flex;flex-direction:column;gap:6px}
+.msg-row{display:flex;gap:9px;align-items:flex-start}
+.msg-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.msg-wrap{max-width:72%}
+.msg-bubble{background:var(--bone);border:1px solid var(--border);border-radius:0 9px 9px 9px;padding:9px 12px}
+.msg-bubble.flagged{background:#FFF5F5;border-color:rgba(250,110,110,.3)}
+.msg-text{font-size:13px;line-height:1.58}
+.sent-bar{height:2.5px;border-radius:2px;margin-top:5px}
+.kw-flag{background:#FFF5F5;border:1px solid rgba(250,110,110,.3);border-radius:3px;padding:1px 5px;font-size:10.5px;color:var(--critical-text);display:inline-flex;align-items:center;gap:3px;margin-top:5px}
+.kw-highlight{background:#FFF8E1;border-bottom:2px solid var(--amber);padding:0 2px;border-radius:2px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:3px;padding-left:4px}
+
+.ai-trace-card{background:linear-gradient(135deg,#EFF7FF,#E8F2FF);border:1px solid #C4DAF5;border-radius:var(--r-lg);padding:18px}
+.atc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.atc-icon{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--slate),var(--slate-mid));display:flex;align-items:center;justify-content:center}
+.atc-icon svg{width:12px;height:12px;stroke:#fff;stroke-width:2.5}
+.atc-title{font-size:12.5px;font-weight:600;color:var(--slate)}
+.atc-body{font-size:12.5px;color:#1C3E5C;line-height:1.68}
+.explain-toggle{font-size:11px;color:var(--slate-light);cursor:pointer;display:inline-flex;align-items:center;gap:3px;margin-top:8px;border:none;background:none;font-family:inherit;padding:0}
+.explain-toggle:hover{color:var(--slate)}
+.explain-box{background:#fff;border:1px solid #C4DAF5;border-radius:var(--r-sm);padding:11px;margin-top:8px;display:none;grid-template-columns:1fr 1fr;gap:7px}
+.explain-box.open{display:grid;animation:revealUp 150ms both}
+.eb-item{font-size:12px;color:#1C3E5C}<br>
+.eb-item strong{display:block;font-size:10px;color:#3A6EA5;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1px}
+
+/* ── FLOATING COPILOT ── */
+.copilot-float{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.copilot-card{background:var(--slate);color:#fff;border-radius:var(--r-lg);padding:16px 18px;width:300px;box-shadow:0 12px 40px rgba(28,46,62,.35);animation:slideUp 300ms var(--spring) both;display:flex;gap:12px;align-items:flex-start}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.copilot-card.hidden{display:none}
+.cp-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cp-icon svg{width:15px;height:15px;stroke:#fff;stroke-width:2}
+.cp-body{flex:1}
+.cp-eyebrow{font-size:9.5px;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.cp-text{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.9)}
+.cp-patient{font-style:italic;color:rgba(255,255,255,.7)}
+.cp-actions{display:flex;gap:6px;margin-top:10px}
+.cp-btn{border-radius:6px;padding:4px 10px;font-size:11.5px;cursor:pointer;font-family:inherit;border:none;transition:all 120ms;font-weight:500}
+.cp-btn.primary{background:rgba(255,255,255,.15);color:#fff}
+.cp-btn.primary:hover{background:rgba(255,255,255,.25)}
+.cp-btn.ghost{background:transparent;color:rgba(255,255,255,.5);border:none}
+.cp-btn.ghost:hover{color:rgba(255,255,255,.8)}
+.copilot-toggle{width:44px;height:44px;border-radius:50%;background:var(--slate);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(28,46,62,.3);transition:transform 200ms var(--spring)}
+.copilot-toggle:hover{transform:scale(1.1)}
+.copilot-toggle svg{width:18px;height:18px;stroke:#fff;stroke-width:2}
+.cp-pulse{position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(165,189,168,.5);animation:cpulse 2s ease infinite}
+@keyframes cpulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:0}}
+
+/* ── CHART SECTION ── */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:1px;background:var(--bone);border-radius:var(--r-sm);padding:2px;border:1px solid var(--border)}
+.tab{padding:6px 13px;border-radius:4px;cursor:pointer;font-size:12.5px;color:var(--muted);transition:all 130ms;font-family:inherit;border:none;background:none}
+.tab.active{background:var(--card);color:var(--slate);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+
+/* ── SECTIONS ── */
+.sec-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:16px}
+.sec-hd h2{font-family:'Instrument Serif',serif;font-size:20px;color:var(--slate)}
+.sec-hd p{font-size:12px;color:var(--muted)}
+.sec-hd-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── DIVIDER ── */
+hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+/* ── DRIFT BARS ── */
+.drift-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.drift-fill-el{height:100%;border-radius:3px;transition:width 600ms var(--ease)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  .shell{grid-template-columns:var(--sidebar-w) 1fr}
+  .right-col{display:none}
+}
+@media(max-width:768px){
+  :root{--sidebar-w:220px}
+  .shell{grid-template-columns:var(--sidebar-w) 1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .tl-layout,.chat-layout,.ins-layout,.alerts-layout{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-brand">
+        <div class="sb-gem">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div class="sb-wordmark">Lumid</div>
+          <div class="sb-tagline">Emotional OS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">🧠 Clinical Monitoring</div>
+      <div class="sb-item active" onclick="showView('patients',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Patient Overview
+      </div>
+      <div class="sb-item" onclick="showView('timeline',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Cognitive Timeline
+      </div>
+      <div class="sb-item" onclick="showView('chat',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Chat Analyzer
+        <span class="sb-pill red">3</span>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">📈 Cognitive Intelligence</div>
+      <div class="sb-item" onclick="showView('narrative',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        Narrative Map
+      </div>
+      <div class="sb-item" onclick="showView('insights',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+        Insights & Plans
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">📦 Intervention Library</div>
+      <div class="sb-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Protocol Library
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">🔔 Escalation Center</div>
+      <div class="sb-item" onclick="showView('alerts',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Alerts
+        <span class="sb-pill red">5</span>
+      </div>
+      <div class="sb-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Latency Report
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">DR</div>
+        <div>
+          <div class="sb-user-name">Dr. Reyes</div>
+          <div class="sb-user-role">Licensed Psychologist</div>
+        </div>
+        <div class="sb-status"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main-col">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title" id="page-title">Patient Overview</div>
+        <div class="breadcrumb"><span>Lumid</span><span class="breadcrumb-sep">›</span><span id="breadcrumb-page">Patients</span></div>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" placeholder="Search patients, patterns, signals…" autocomplete="off">
+        <kbd>⌘K</kbd>
+      </div>
+      <div class="tb-right">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.75"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sage),#6BAED6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--slate);cursor:pointer">DR</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ════════════ VIEW: PATIENTS ════════════ -->
+      <div class="view active" id="view-patients">
+        <div class="stats-row">
+          <div class="stat-tile">
+            <div class="st-eyebrow">Active Caseload</div>
+            <div><span class="st-num">24</span><span class="st-unit">pts</span></div>
+            <div class="st-bar"><div class="st-bar-fill" style="width:80%;background:linear-gradient(90deg,var(--sage-dark),var(--sage))"></div></div>
+            <div class="st-trend trend-pos">↑ 2 added this week</div>
+          </div>
+          <div class="stat-tile">
+            <div class="st-eyebrow">Under Watch</div>
+            <div><span class="st-num">7</span><span class="st-unit">pts</span></div>
+            <div class="st-bar"><div class="st-bar-fill" style="width:29%;background:linear-gradient(90deg,#D4A017,var(--amber))"></div></div>
+            <div class="st-trend trend-neu">→ Unchanged from last week</div>
+          </div>
+          <div class="stat-tile">
+            <div class="st-eyebrow">Critical Flags</div>
+            <div><span class="st-num" style="color:var(--coral)">2</span><span class="st-unit">today</span></div>
+            <div class="st-bar"><div class="st-bar-fill" style="width:20%;background:linear-gradient(90deg,#F09090,var(--coral))"></div></div>
+            <div class="st-trend trend-neg">↑ 1 since yesterday — act now</div>
+          </div>
+          <div class="stat-tile">
+            <div class="st-eyebrow">Check-in Rate</div>
+            <div><span class="st-num">87</span><span class="st-unit">%</span></div>
+            <div class="st-bar"><div class="st-bar-fill" style="width:87%;background:linear-gradient(90deg,var(--sage-dark),#52D98E)"></div></div>
+            <div class="st-trend trend-pos">↑ 4% vs last week</div>
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <span style="font-size:11.5px;color:var(--muted)">Filter:</span>
+          <button class="filter-chip on" onclick="filterPts('all',this)">All · 24</button>
+          <button class="filter-chip" onclick="filterPts('critical',this)">⛔ Critical</button>
+          <button class="filter-chip" onclick="filterPts('watch',this)">🟡 Watch</button>
+          <button class="filter-chip" onclick="filterPts('stable',this)">✅ Stable</button>
+          <button class="filter-chip" onclick="filterPts('silent',this)">🔇 48h Silence</button>
+          <div class="filter-sep"></div>
+          <div class="view-toggle">
+            <button class="vt-btn on">Grid</button>
+            <button class="vt-btn">List</button>
+          </div>
+        </div>
+
+        <div class="pt-grid" id="pt-grid"></div>
+      </div>
+
+      <!-- ════════════ VIEW: TIMELINE ════════════ -->
+      <div class="view" id="view-timeline">
+        <div class="tl-layout">
+          <div>
+            <div class="tl-chart-card">
+              <div class="tl-header">
+                <div class="tl-patient">
+                  <div class="tl-av" style="background:#E8F0F7;color:#2C3E4F">SL</div>
+                  <div>
+                    <div style="font-weight:600;font-size:14px">Sofia Larson</div>
+                    <div style="font-size:11.5px;color:var(--muted)">Session 14 · GAD, Trauma History</div>
+                  </div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                  <span class="risk-pill watch"><span class="rp-dot"></span>Watch</span>
+                  <div class="tabs">
+                    <button class="tab active">7D</button>
+                    <button class="tab">30D</button>
+                    <button class="tab">90D</button>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-wrap"><canvas id="moodChart"></canvas></div>
+              <div class="legend-row">
+                <div class="leg-item"><div class="leg-line" style="background:var(--slate)"></div>Mood Score</div>
+                <div class="leg-item"><div class="leg-line" style="background:var(--amber);height:2px;border-top:1px dashed var(--amber)"></div>Sentiment</div>
+                <div class="leg-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--coral)"></div>Escalation Flag</div>
+              </div>
+            </div>
+
+            <div class="pattern-tags-card">
+              <div style="font-size:13px;font-weight:600;color:var(--slate);margin-bottom:10px">Cognitive Pattern Tags · This Week</div>
+              <div class="ptag-grid">
+                <span class="ptag avoidance">⟳ Avoidance Loop · Day 3</span>
+                <span class="ptag shame">↓ Shame Spiral · Moderate</span>
+                <span class="ptag catastrophe">⚡ Catastrophizing · Intermittent</span>
+                <span class="ptag positive">✓ Self-compassion Emerging</span>
+                <span class="ptag neutral">Mind Reading</span>
+                <span class="ptag neutral">Rumination Cycle</span>
+              </div>
+              <div class="reasoning-box">
+                <div class="rb-label">AI Reasoning Trace</div>
+                <div class="rb-text">Pattern identified from 3 consecutive journal entries using passive voice constructions ("things happen to me") alongside catastrophic outcome predictions. Shame spiral reinforced by self-deprecating language clusters appearing in evening check-ins. Avoidance behaviors confirmed by response delay analysis — avg reply latency doubled vs baseline.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tl-side">
+            <div class="tl-side-card">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Escalation Markers</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="padding:10px;border-radius:var(--r-sm);background:var(--critical-bg);border:1px solid var(--critical-border)">
+                  <div style="font-size:11px;font-weight:600;color:var(--critical-text)">Oct 14 · 11:42 PM</div>
+                  <div style="font-size:12.5px;color:var(--ink);margin-top:3px">"I can't keep doing this anymore"</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px">Sentiment: −0.78 · Flagged thread</div>
+                </div>
+                <div style="padding:10px;border-radius:var(--r-sm);background:var(--watch-bg);border:1px solid var(--watch-border)">
+                  <div style="font-size:11px;font-weight:600;color:var(--watch-text)">Oct 12 · 2:15 PM</div>
+                  <div style="font-size:12.5px;color:var(--ink);margin-top:3px">3 missed check-ins · Flat affect</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px">Engagement −60%</div>
+                </div>
+              </div>
+            </div>
+            <div class="tl-side-card">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">7-Day Snapshot</div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Avg Mood</span><span style="color:var(--ink);font-weight:500">4.2 / 10</span></div>
+                  <div class="drift-track"><div class="drift-fill-el" style="width:42%;background:linear-gradient(90deg,var(--amber),#D4A017)"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Engagement</span><span style="color:var(--ink);font-weight:500">61%</span></div>
+                  <div class="drift-track"><div class="drift-fill-el" style="width:61%;background:linear-gradient(90deg,var(--sage-dark),var(--sage))"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Narrative Drift</span><span style="color:var(--critical-text);font-weight:500">High · 0.78</span></div>
+                  <div class="drift-track"><div class="drift-fill-el" style="width:78%;background:linear-gradient(90deg,#FF8A80,var(--coral))"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>Positive Anchors</span><span style="color:#1E6B30;font-weight:500">3 found</span></div>
+                  <div class="drift-track"><div class="drift-fill-el" style="width:30%;background:linear-gradient(90deg,var(--sage-dark),#52D98E)"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════ VIEW: CHAT ════════════ -->
+      <div class="view" id="view-chat">
+        <div class="chat-layout">
+          <div>
+            <div class="chat-card">
+              <div class="chat-head">
+                <div class="tl-av" style="background:#FFE5E0;color:#8B3500;width:32px;height:32px;font-size:13px">SL</div>
+                <div>
+                  <div style="font-weight:600;font-size:13.5px">Sofia Larson — Oct 14, 11:38–11:52 PM</div>
+                  <div style="font-size:11.5px;color:var(--muted)">Flagged thread · Late-night session · Sentiment avg −0.74</div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:7px;align-items:center">
+                  <span class="risk-pill critical"><span class="rp-dot"></span>Critical</span>
+                  <button class="btn btn-ghost" style="font-size:12px;padding:5px 11px">Export</button>
+                </div>
+              </div>
+              <div class="chat-stream" id="chat-stream"></div>
+            </div>
+
+            <div class="ai-trace-card">
+              <div class="atc-head">
+                <div class="atc-icon">
+                  <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="atc-title">AI Reasoning Trace — Why this thread was flagged</div>
+              </div>
+              <div class="atc-body">Thread flagged due to: <strong>(1)</strong> hopelessness language cluster ("can't keep doing this"), <strong>(2)</strong> third consecutive midnight session — temporal risk elevated, <strong>(3)</strong> negative sentiment peak −0.85, highest in 30-day window, <strong>(4)</strong> absence of future-oriented language, and <strong>(5)</strong> message gap inflation (+40%) consistent with dissociation pattern.</div>
+              <button class="explain-toggle" onclick="toggleExplain()">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+                Model confidence breakdown
+              </button>
+              <div class="explain-box" id="explain-box">
+                <div class="eb-item"><strong>Hopelessness</strong>0.84 · High</div>
+                <div class="eb-item"><strong>Flat affect</strong>0.71 · Moderate</div>
+                <div class="eb-item"><strong>Temporal risk</strong>0.68 · Moderate</div>
+                <div class="eb-item"><strong>Overall risk</strong>0.79 · High</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="chart-card" style="padding:14px">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Message Timing Gaps</div>
+              <div style="height:70px"><canvas id="timingChart"></canvas></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px">Gap inflation +40% — dissociation pattern</div>
+            </div>
+            <div class="chart-card" style="padding:14px">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Detected Signals</div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-radius:var(--r-sm);background:var(--critical-bg);border:1px solid var(--critical-border)"><span style="font-size:12px">Hopelessness language</span><span style="font-size:11.5px;color:var(--critical-text);font-weight:600">High</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-radius:var(--r-sm);background:var(--watch-bg);border:1px solid var(--watch-border)"><span style="font-size:12px">Flat affect</span><span style="font-size:11.5px;color:var(--watch-text);font-weight:600">Mod.</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-radius:var(--r-sm);background:var(--critical-bg);border:1px solid var(--critical-border)"><span style="font-size:12px">Late-night messaging</span><span style="font-size:11.5px;color:var(--critical-text);font-weight:600">High</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-radius:var(--r-sm);background:var(--stable-bg);border:1px solid var(--stable-border)"><span style="font-size:12px">Sarcasm detected</span><span style="font-size:11.5px;color:var(--stable-text);font-weight:600">Low</span></div>
+              </div>
+            </div>
+            <div class="chart-card" style="padding:14px">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Quick Triage</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:12.5px">
+                  <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                  Escalate to Supervisor
+                </button>
+                <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12.5px">Mark Safe — No Action</button>
+                <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12.5px">Send Reflective Prompt</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════ VIEW: NARRATIVE ════════════ -->
+      <div class="view" id="view-narrative">
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:18px">
+          <div>
+            <div class="chart-card" style="margin-bottom:14px">
+              <div class="sec-hd"><h2>Narrative Map</h2><p>Sofia Larson · Oct 7–14</p></div>
+              <div id="word-cloud" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0 16px"></div>
+              <hr>
+              <div style="font-size:13px;font-weight:600;color:var(--slate);margin-bottom:12px">Sentence Structure Drift</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div style="background:var(--bone);border-radius:var(--r-sm);padding:13px;border:1px solid var(--border)">
+                  <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px">Passive</div>
+                  <div style="font-family:'Instrument Serif',serif;font-size:30px;color:var(--critical-text);line-height:1">68%</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">"things happen to me"</div>
+                  <div class="drift-track" style="margin-top:8px"><div class="drift-fill-el" style="width:68%;background:var(--coral)"></div></div>
+                </div>
+                <div style="background:var(--bone);border-radius:var(--r-sm);padding:13px;border:1px solid var(--border)">
+                  <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px">Active</div>
+                  <div style="font-family:'Instrument Serif',serif;font-size:30px;color:var(--slate);line-height:1">22%</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">"I decided / I tried"</div>
+                  <div class="drift-track" style="margin-top:8px"><div class="drift-fill-el" style="width:22%;background:var(--slate)"></div></div>
+                </div>
+                <div style="background:var(--bone);border-radius:var(--r-sm);padding:13px;border:1px solid var(--border)">
+                  <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px">Blaming</div>
+                  <div style="font-family:'Instrument Serif',serif;font-size:30px;color:var(--watch-text);line-height:1">10%</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">"they always / never"</div>
+                  <div class="drift-track" style="margin-top:8px"><div class="drift-fill-el" style="width:10%;background:var(--amber)"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div style="font-size:13px;font-weight:600;color:var(--slate);margin-bottom:12px">Weekly Themes</div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:var(--r-sm);background:var(--bone);border:1px solid var(--border)">
+                  <div style="width:3px;height:48px;border-radius:2px;background:var(--coral);flex-shrink:0"></div>
+                  <div><div style="font-weight:600;font-size:13px">Overcontrol & Perfectionism</div><div style="font-size:12px;color:var(--muted);margin-top:3px">In 6/7 journal entries. Tied to work performance anxiety and fear of authority judgment.</div></div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:var(--r-sm);background:var(--bone);border:1px solid var(--border)">
+                  <div style="width:3px;height:48px;border-radius:2px;background:var(--amber);flex-shrink:0"></div>
+                  <div><div style="font-weight:600;font-size:13px">Catastrophizing Future Events</div><div style="font-size:12px;color:var(--muted);margin-top:3px">3 instances of catastrophic "what if" scenario-building around relationships and career.</div></div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:var(--r-sm);background:var(--bone);border:1px solid var(--border)">
+                  <div style="width:3px;height:48px;border-radius:2px;background:var(--sage);flex-shrink:0"></div>
+                  <div><div style="font-weight:600;font-size:13px">Emerging Self-Compassion</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Increased self-kindness language in morning entries. Strong anchor point for intervention.</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:80px">
+            <div class="chart-card" style="text-align:center">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Baseline Drift Score</div>
+              <div style="font-family:'Instrument Serif',serif;font-size:54px;color:var(--coral);line-height:1;letter-spacing:-.02em">0.78</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Distance from baseline self-narrative</div>
+              <div style="font-size:12px;color:var(--critical-text);font-weight:500;margin-top:4px">High Drift — Intervene</div>
+              <div class="drift-track" style="margin-top:14px;height:8px"><div class="drift-fill-el" style="width:78%;background:linear-gradient(90deg,var(--amber),var(--coral))"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px"><span>Stable</span><span>Drifted</span></div>
+            </div>
+            <div class="chart-card">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Journal Highlight</div>
+              <div style="font-size:12.5px;color:var(--slate-mid);font-style:italic;line-height:1.7;border-left:2.5px solid var(--sage);padding-left:11px">"I keep waiting for something to change but I don't know what I'm waiting for. It's like I'm disappearing from my own life."</div>
+              <div style="font-size:10.5px;color:var(--muted);margin-top:8px">Oct 13 · 10:47 PM · Evening journal</div>
+              <div style="display:flex;gap:5px;margin-top:10px">
+                <button class="aib">Flag</button>
+                <button class="aib">Add to plan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════ VIEW: INSIGHTS ════════════ -->
+      <div class="view" id="view-insights">
+        <div class="ins-layout">
+          <div>
+            <div class="ins-card">
+              <div class="ins-plan-head">
+                <div>
+                  <div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--slate)">7-Day Care Plan</div>
+                  <div style="font-size:11.5px;color:var(--muted)">Sofia Larson · Generated Oct 14 · AI confidence 82%</div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-ghost" style="font-size:12.5px">Edit</button>
+                  <button class="btn btn-primary" style="font-size:12.5px">
+                    <svg viewBox="0 0 24 24"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    Assign
+                  </button>
+                </div>
+              </div>
+              <div class="conf-strip"><div class="conf-fill" style="width:82%"></div></div>
+              <div class="conf-label" style="margin-bottom:16px">82% confidence — 14 sessions, 47 entries, 3 flagged threads</div>
+              <div id="goals-list"></div>
+            </div>
+
+            <div class="ins-card">
+              <div style="font-family:'Instrument Serif',serif;font-size:17px;color:var(--slate);margin-bottom:12px">Journaling Prompts</div>
+              <div class="prompt-card">
+                <div class="prompt-text">"What would I tell a close friend going through exactly what I'm experiencing right now?"</div>
+                <div class="prompt-cat">Self-compassion · Addresses shame spiral</div>
+              </div>
+              <div class="prompt-card">
+                <div class="prompt-text">"Describe one moment this week where I felt like myself, even briefly. What was happening?"</div>
+                <div class="prompt-cat">Positive anchoring · Counteracts drift</div>
+              </div>
+              <div class="prompt-card">
+                <div class="prompt-text">"What's the most realistic version of the future I'm afraid of — and then what happens after that?"</div>
+                <div class="prompt-cat">Catastrophizing deconstruction</div>
+              </div>
+            </div>
+
+            <div class="ins-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-family:'Instrument Serif',serif;font-size:17px;color:var(--slate)">Session Note</div>
+                <div class="tabs">
+                  <button class="tab active">SOAP</button>
+                  <button class="tab">DAP</button>
+                  <button class="tab">Free</button>
+                </div>
+              </div>
+              <div class="soap-field"><div class="soap-label">S — Subjective</div><textarea class="soap-textarea" rows="2" placeholder="What the patient reported…"></textarea></div>
+              <div class="soap-field"><div class="soap-label">O — Objective</div><textarea class="soap-textarea" rows="2">Mood avg 4.2/10. Passive voice 68%. Flat affect detected. Missed 2/7 check-ins.</textarea></div>
+              <div class="soap-field"><div class="soap-label">A — Assessment</div><textarea class="soap-textarea" rows="2">GAD intensifying. Shame-based avoidance. Catastrophic ideation. Narrative drift 0.78 — high risk.</textarea></div>
+              <div class="soap-field"><div class="soap-label">P — Plan</div><textarea class="soap-textarea" rows="2">1. 2× daily check-ins. 2. Self-compassion journaling protocol. 3. Mid-week teletherapy. 4. Monitor escalation triggers.</textarea></div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+                <button class="btn btn-ghost">Save Draft</button>
+                <button class="btn btn-primary">Sign & Submit</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:80px">
+            <div style="background:linear-gradient(135deg,#FFF3F3,#FFF8F5);border:1px solid var(--critical-border);border-radius:var(--r-lg);padding:16px">
+              <div style="font-size:12px;font-weight:600;color:var(--critical-text);margin-bottom:7px">⚡ Escalation Suggestion</div>
+              <div style="font-size:12.5px;color:var(--slate-mid);line-height:1.6">Language patterns + drift score suggest scheduling within 48 hours and notifying supervisor.</div>
+              <div style="display:flex;gap:6px;margin-top:10px">
+                <button class="aib red">Escalate Now</button>
+                <button class="aib">Dismiss</button>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Intervention Library</div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="padding:9px;border-radius:var(--r-sm);background:var(--bone);border:1px solid var(--border);cursor:pointer;transition:border-color 150ms" onmouseover="this.style.borderColor='var(--slate-light)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div style="font-size:12.5px;font-weight:500;color:var(--slate)">Behavioral Activation</div>
+                  <div style="font-size:11.5px;color:var(--muted)">Schedule achievable activities</div>
+                </div>
+                <div style="padding:9px;border-radius:var(--r-sm);background:var(--bone);border:1px solid var(--border);cursor:pointer;transition:border-color 150ms" onmouseover="this.style.borderColor='var(--slate-light)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div style="font-size:12.5px;font-weight:500;color:var(--slate)">Cognitive Restructuring</div>
+                  <div style="font-size:11.5px;color:var(--muted)">Challenge catastrophic patterns</div>
+                </div>
+                <div style="padding:9px;border-radius:var(--r-sm);background:var(--bone);border:1px solid var(--border);cursor:pointer;transition:border-color 150ms" onmouseover="this.style.borderColor='var(--slate-light)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div style="font-size:12.5px;font-weight:500;color:var(--slate)">Mindful Self-Compassion</div>
+                  <div style="font-size:11.5px;color:var(--muted)">MSC protocol · Shame reduction</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════ VIEW: ALERTS ════════════ -->
+      <div class="view" id="view-alerts">
+        <div class="alerts-layout">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+              <div class="tabs">
+                <button class="tab active">All · 5</button>
+                <button class="tab">Critical · 2</button>
+                <button class="tab">Warning · 2</button>
+                <button class="tab">Info · 1</button>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);cursor:pointer"><input type="checkbox" style="accent-color:var(--slate)"> Quiet Mode</label>
+                <button class="aib">Select All</button>
+              </div>
+            </div>
+            <div id="alerts-list"></div>
+          </div>
+          <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:12px">
+            <div class="chart-card">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Alert Summary</div>
+              <div style="height:120px"><canvas id="alertChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Avg Response Time</div>
+              <div style="font-family:'Instrument Serif',serif;font-size:32px;color:var(--slate)">2.4<span style="font-size:16px;color:var(--muted)"> hrs</span></div>
+              <div style="font-size:11.5px;color:var(--stable-text)">↑ Within target (&lt;4h)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main-col -->
+
+  <!-- ── RIGHT COL — Practice Intelligence ── -->
+  <aside class="right-col">
+    <div class="rc-head">
+      <div class="rc-title">Practice Intelligence</div>
+      <div class="rc-sub">Live clinical signals · Updated 2m ago</div>
+    </div>
+
+    <div class="rc-section">
+      <div class="rc-sec-label">Clients at Tipping Point</div>
+      <div id="tipping-list"></div>
+    </div>
+
+    <div class="rc-section">
+      <div class="rc-sec-label">Top Patterns Across Practice</div>
+      <div id="pattern-list"></div>
+    </div>
+
+    <div class="rc-section">
+      <div class="rc-sec-label">Escalation Latency</div>
+      <div class="escalation-latency" id="latency-list"></div>
+    </div>
+
+    <div class="rc-section">
+      <div class="rc-sec-label">Therapist Wellbeing</div>
+      <div class="burnout-gauge">
+        <div style="display:flex;justify-content:center">
+          <canvas id="burnoutGauge" width="140" height="80"></canvas>
+        </div>
+        <div class="burnout-label">
+          <div class="burnout-score">32<span style="font-size:14px;color:var(--muted)">/100</span></div>
+          <div class="burnout-desc">Burnout Risk — <span style="color:var(--stable-text);font-weight:500">Low</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rc-section" style="border-bottom:none">
+      <div class="rc-sec-label">Recent Activity Log</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:11.5px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border)">11:52 PM · Viewed Marcus Webb alert</div>
+        <div style="font-size:11.5px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border)">10:14 PM · Sofia Larson note saved</div>
+        <div style="font-size:11.5px;color:var(--muted);padding:5px 0">9:30 PM · Care plan assigned to Priya Nair</div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ── PATIENT FLYOUT ── -->
+<div class="flyout-overlay" id="flyout">
+  <div class="flyout-bg" onclick="closeFlyout()"></div>
+  <div class="flyout">
+    <div class="flyout-head">
+      <button class="flyout-close" onclick="closeFlyout()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:4px">
+        <div id="fl-av" class="tl-av" style="width:44px;height:44px;font-size:17px"></div>
+        <div>
+          <div id="fl-name" style="font-weight:600;font-size:17px;color:var(--ink)"></div>
+          <div id="fl-arc" style="font-size:12px;color:var(--slate-light);font-style:italic"></div>
+        </div>
+        <div id="fl-badge" style="margin-left:auto"></div>
+      </div>
+    </div>
+    <div class="flyout-body">
+      <div class="fl-section">
+        <div class="fl-sec-title">Emotional Trajectory · 7 Days</div>
+        <div style="height:90px"><canvas id="flyoutChart"></canvas></div>
+      </div>
+      <div class="fl-section">
+        <div class="fl-sec-title">Last 3 AI Insights</div>
+        <div id="fl-insights"></div>
+      </div>
+      <div class="fl-section">
+        <div class="fl-sec-title">AI Reasoning</div>
+        <div class="fl-ai-trace">
+          <div class="fl-ai-label">Copilot Analysis</div>
+          <div id="fl-reasoning" class="fl-ai-text"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" onclick="showView('timeline',null);closeFlyout()">Open Full Profile</button>
+        <button class="btn btn-ghost" onclick="closeFlyout()">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FLOATING COPILOT ── -->
+<div class="copilot-float" id="copilot-float">
+  <div class="copilot-card" id="copilot-card">
+    <div class="cp-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+    </div>
+    <div class="cp-body">
+      <div class="cp-eyebrow">Copilot Suggestion</div>
+      <div class="cp-text">Would you like to nudge <span class="cp-patient">Marcus Webb</span> with a reflective journaling task? His last response was 48h ago and sentiment is declining.</div>
+      <div class="cp-actions">
+        <button class="cp-btn primary" onclick="dismissCopilot()">Assign Task</button>
+        <button class="cp-btn ghost" onclick="dismissCopilot()">Not now</button>
+      </div>
+    </div>
+  </div>
+  <button class="copilot-toggle" onclick="toggleCopilot()" style="position:relative">
+    <div class="cp-pulse"></div>
+    <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+  </button>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const PTS = [
+  {id:1,name:'Sofia Larson',initials:'SL',bg:'#E8F0F7',fg:'#1C2E3E',status:'watch',mood:[6,5,7,4,4,3,4],arc:'Withdrawing from future planning',lastCheck:'2h ago',chatVol:'↑ 34%',polarity:-1.8,behaviors:['Shortening replies','Avoiding planning language'],emotions:[{name:'Anxiety',int:4,color:'#FFB3B3',bg:'#FFF0F0'},{name:'Avoidance',int:3,color:'#F6BE00',bg:'#FFFBE0'},{name:'Shame',int:3,color:'#D4A0C0',bg:'#FFF0F8'}],flagged:false,insights:['Passive voice usage ↑68% — narrative agency declining','Rumination cluster detected in 5 of 7 entries','Self-compassion phrases appearing in AM journals — anchor point'],reasoning:'Mood trajectory shows consistent decline with brief recovery on Oct 10. Avoidance patterns correlate with upcoming performance review. Shame language clusters in evening sessions suggest internalization of external pressures.'},
+  {id:2,name:'Marcus Webb',initials:'MW',bg:'#FFE8E8',fg:'#8B3500',status:'critical',mood:[7,5,3,2,2,1,2],arc:'Disengaging from support systems',lastCheck:'48h ago',chatVol:'↓ 71%',polarity:-3.6,behaviors:['Ceased journaling','Monosyllabic responses'],emotions:[{name:'Hopelessness',int:4,color:'#FF6B6B',bg:'#FFF0F0'},{name:'Isolation',int:4,color:'#D4A0C0',bg:'#FFF0F8'},{name:'Anger',int:2,color:'#F6BE00',bg:'#FFFBE0'}],flagged:true,insights:['48h communication silence — highest risk flag','Mood score hit historic low of 1.2 on Oct 13','Chat volume dropped 71% — voluntary withdrawal detected'],reasoning:'Critical pattern: 5-day downward mood spiral + sudden communication withdrawal. Hopelessness language density 340% above baseline. Immediate outreach recommended. No future-oriented language in last 8 interactions.'},
+  {id:3,name:'Priya Nair',initials:'PN',bg:'#F0F7F0',fg:'#1A5C30',status:'stable',mood:[6,7,6,8,7,8,7],arc:'Building emotional resilience',lastCheck:'1h ago',chatVol:'→ +5%',polarity:2.4,behaviors:['Consistent check-ins','Expanding emotional vocabulary'],emotions:[{name:'Calm',int:3,color:'#86C49B',bg:'#F0FFF4'},{name:'Hopeful',int:4,color:'#6BAED6',bg:'#EFF7FF'},{name:'Reflective',int:3,color:'#D4A0C0',bg:'#F8F0FF'}],flagged:false,insights:['8-day mood improvement streak — reinforce','Journaling depth score highest in 6 weeks','Self-efficacy language ↑ 44% — strong momentum'],reasoning:'Positive trajectory sustained for 8 days. Gratitude practice correlating with mood improvement. Recommend continuing current intervention while introducing values clarification work.'},
+  {id:4,name:'Jordan Kim',initials:'JK',bg:'#F3F0FF',fg:'#4A1A7A',status:'watch',mood:[5,6,5,4,5,3,4],arc:'Pre-session avoidance loop',lastCheck:'6h ago',chatVol:'↑ 12%',polarity:-0.8,behaviors:['Deflecting with humor','Avoiding commitment language'],emotions:[{name:'Worry',int:3,color:'#F6BE00',bg:'#FFFBE0'},{name:'Rumination',int:4,color:'#D4A0C0',bg:'#FFF0F8'},{name:'Ambivalence',int:2,color:'#6BAED6',bg:'#EFF7FF'}],flagged:false,insights:['Avoidance pattern before scheduled sessions','Humor deflection detected in 4 chat threads','Future-oriented language dropped 35%'],reasoning:'Avoidance behaviors escalating ahead of Thursday session. Chat volume up but emotional depth low — surface engagement without processing. Recommend Socratic questioning approach.'},
+  {id:5,name:'Aisha Okoye',initials:'AO',bg:'#FFFDE7',fg:'#7A5C00',status:'stable',mood:[8,7,8,9,8,8,9],arc:'Assertiveness breakthrough',lastCheck:'30m ago',chatVol:'→ +5%',polarity:3.2,behaviors:['Using boundary-setting language','Celebrating small wins'],emotions:[{name:'Gratitude',int:4,color:'#86C49B',bg:'#F0FFF4'},{name:'Pride',int:3,color:'#6BAED6',bg:'#EFF7FF'},{name:'Growth',int:4,color:'#A5BDA8',bg:'#F2F9F3'}],flagged:false,insights:['First boundary-setting behavior logged','Polarity score highest in treatment history','Recommend reinforcing assertiveness gains this week'],reasoning:'Significant breakthrough: first documented assertiveness behavior after 14 weeks. Mood at 9/10 — highest recorded. This is a key moment to anchor and build on. Celebrate and reinforce.'},
+  {id:6,name:'Thomas Hale',initials:'TH',bg:'#FFEBEE',fg:'#8B0038',status:'critical',mood:[4,3,3,2,3,2,1],arc:'Nihilistic withdrawal deepening',lastCheck:'12h ago',chatVol:'↓ 55%',polarity:-3.8,behaviors:['Nihilistic language increasing','Ceased future planning'],emotions:[{name:'Despair',int:4,color:'#FF6B6B',bg:'#FFF0F0'},{name:'Numbness',int:4,color:'#D4A0C0',bg:'#FFF0F8'},{name:'Withdrawal',int:3,color:'#F6BE00',bg:'#FFFBE0'}],flagged:true,insights:['5 consecutive entries with nihilistic themes','Lowest mood score in treatment history: 1/10','Language analysis: zero future-oriented constructions'],reasoning:'Critical risk threshold reached. Nihilistic language density at 92nd percentile. Mood score at historic low. Zero future-oriented language in last 10 interactions. Supervisor notification recommended immediately.'},
+  {id:7,name:'Elena Voss',initials:'EV',bg:'#EFF7FF',fg:'#003A6B',status:'stable',mood:[7,8,7,7,8,9,8],arc:'Post-breakthrough integration',lastCheck:'3h ago',chatVol:'→ +8%',polarity:2.8,behaviors:['Applying coping tools unprompted','Increased emotional granularity'],emotions:[{name:'Curiosity',int:3,color:'#6BAED6',bg:'#EFF7FF'},{name:'Growth',int:4,color:'#86C49B',bg:'#F0FFF4'},{name:'Calm',int:3,color:'#A5BDA8',bg:'#F2F9F3'}],flagged:false,insights:['Self-initiated breathing exercise — high signal','Emotional vocabulary expanded by 28%','Narrative voice shifting from passive to active'],reasoning:'Strong integration phase following last session breakthrough. Applying techniques independently is a high-signal positive indicator. Narrative agency increasing — continue current trajectory.'},
+  {id:8,name:'Devon Cross',initials:'DC',bg:'#F0FFF4',fg:'#1A5C30',status:'watch',mood:[6,5,6,5,4,5,5],arc:'Motivational ambivalence plateau',lastCheck:'4h ago',chatVol:'↓ 15%',polarity:-0.5,behaviors:['Fatigue language patterns','Engagement inconsistency'],emotions:[{name:'Fatigue',int:3,color:'#F6BE00',bg:'#FFFBE0'},{name:'Ambivalence',int:3,color:'#6BAED6',bg:'#EFF7FF'},{name:'Hope',int:2,color:'#86C49B',bg:'#F0FFF4'}],flagged:false,insights:['Motivational readiness score: 3.2/10 (low)','Plateau detected — 3 weeks of flat mood trend','Energy/fatigue language up 44% — somatic focus needed'],reasoning:'Motivational plateau consistent with ambivalence stage. Recommend readiness assessment and exploring values-behavior gap. Patient wants to feel better but lacks activation energy.'},
+];
+
+const MESSAGES = [
+  {type:'pt',text:"I don't know if I can keep doing this. Everything feels so heavy right now.",flagged:true,kw:"keep doing this",sent:-0.72,time:'11:38 PM'},
+  {type:'ai',text:"I hear you. It sounds like you're carrying a lot right now. Can you tell me more about what feels heaviest?",flagged:false,sent:0.3,time:'11:39 PM'},
+  {type:'pt',text:"Work mostly. But also just… everything. I feel like I'm disappearing.",flagged:true,kw:'disappearing',sent:-0.68,time:'11:42 PM'},
+  {type:'ai',text:"That feeling of disappearing — it takes courage to name that. When did it first show up this week?",flagged:false,sent:0.2,time:'11:43 PM'},
+  {type:'pt',text:"A few days ago I guess. I don't know. I just feel worthless sometimes.",flagged:true,kw:'worthless',sent:-0.85,time:'11:51 PM'},
+];
+
+const GOALS = [
+  'Complete one 10-minute mindfulness session each morning',
+  'Write one gratitude entry before bed (minimum 3 items)',
+  'Reach out to one trusted person this week',
+  'Identify 2 "good enough" moments — not perfect, just good enough',
+  '30-minute outdoor walk, 3× this week',
+];
+let goalsDone = [false,true,false,false,true];
+
+const ALERTS = [
+  {sev:'critical',name:'Marcus Webb',title:'48h check-in silence · engagement collapse',desc:'No response to 3 automated check-ins. Last activity 2 days ago. Sentiment trending −4.2.',time:'2h ago',cluster:'Withdrawal'},
+  {sev:'critical',name:'Thomas Hale',title:'"Nothing matters" language cluster · 5th entry',desc:'5 consecutive nihilistic journal entries. Flat affect across all chat interactions. Crisis flag.',time:'4h ago',cluster:'Nihilism'},
+  {sev:'warning',name:'Sofia Larson',title:'Late-night session · 3rd consecutive night',desc:'Messages after midnight for 3 nights. Sentiment −0.78. Possible sleep disruption + rumination.',time:'8h ago',cluster:'Insomnia Loop'},
+  {sev:'warning',name:'Jordan Kim',title:'Avoidance behaviors escalating pre-session',desc:'Canceled 2 journaling sessions. Chat volume spike but emotional depth low — deflection pattern.',time:'12h ago',cluster:'Avoidance'},
+  {sev:'info',name:'Priya Nair',title:'Positive milestone · 8-day streak',desc:'Mood improvement streak + journaling depth highest in 6 weeks. Reinforce current approach.',time:'1d ago',cluster:'Progress'},
+];
+
+const TIPPING = [
+  {initials:'MW',bg:'#FFE8E8',fg:'#8B3500',name:'Marcus Webb',signal:'48h silence + despair↑',risk:'Critical',riskColor:'var(--critical-text)',riskBg:'var(--critical-bg)'},
+  {initials:'TH',bg:'#FFEBEE',fg:'#8B0038',name:'Thomas Hale',signal:'Nihilism cluster + low mood',risk:'Critical',riskColor:'var(--critical-text)',riskBg:'var(--critical-bg)'},
+  {initials:'SL',bg:'#E8F0F7',fg:'#1C2E3E',name:'Sofia Larson',signal:'Drift 0.78 + late-night',risk:'Watch',riskColor:'var(--watch-text)',riskBg:'var(--watch-bg)'},
+];
+
+const PATTERNS = [
+  {label:'Avoidance',count:9,pct:75,color:'#D4A017'},
+  {label:'Catastrophizing',count:7,pct:58,color:var_='var(--coral)'},
+  {label:'Rumination',count:6,pct:50,color:'#9B59B6'},
+  {label:'Shame Spiral',count:5,pct:42,color:'#E91E63'},
+  {label:'Self-compassion',count:4,pct:33,color:'var(--sage-dark)'},
+];
+
+const LATENCY = [
+  {name:'Marcus Webb',time:'2.1h',color:'var(--stable-text)'},
+  {name:'Thomas Hale',time:'3.8h',color:'var(--watch-text)'},
+  {name:'Sofia Larson',time:'1.4h',color:'var(--stable-text)'},
+  {name:'Jordan Kim',time:'5.2h',color:'var(--critical-text)'},
+];
+
+const WORD_DATA = [
+  {word:'overwhelmed',sz:24,bg:'#FFE5E0',col:'#8B3500'},
+  {word:'waiting',sz:18,bg:'#FFF8E1',col:'#7A5C00'},
+  {word:'disappearing',sz:22,bg:'#FFEBEE',col:'#8B0038'},
+  {word:'hopeful',sz:15,bg:'#E8F5E9',col:'#1B5E20'},
+  {word:'afraid',sz:19,bg:'#FFF8E1',col:'#7A5C00'},
+  {word:'control',sz:20,bg:'#F3E5F5',col:'#4A148C'},
+  {word:'exhausted',sz:23,bg:'#FFE5E0',col:'#8B3500'},
+  {word:'trying',sz:16,bg:'#E3F2FD',col:'#0D47A1'},
+  {word:'worthless',sz:20,bg:'#FFEBEE',col:'#8B0038'},
+  {word:'better',sz:14,bg:'#E8F5E9',col:'#1B5E20'},
+  {word:'stuck',sz:21,bg:'#FFF3E0',col:'#8B4500'},
+  {word:'deserving',sz:13,bg:'#F3E5F5',col:'#4A148C'},
+];
+
+// ── CHART INSTANCES ──
+let chartInstances = {};
+
+function destroyChart(id){
+  if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id]}
+  const el = document.getElementById(id);
+  if(el){const p=el.parentElement;const c=document.createElement('canvas');c.id=id;p.replaceChild(c,el)}
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+
+function renderPatients(filter='all'){
+  const grid = document.getElementById('pt-grid');
+  let list = PTS;
+  if(filter==='critical') list=PTS.filter(p=>p.status==='critical');
+  else if(filter==='watch') list=PTS.filter(p=>p.status==='watch');
+  else if(filter==='stable') list=PTS.filter(p=>p.status==='stable');
+  else if(filter==='silent') list=PTS.filter((p,i)=>i===1||i===5);
+
+  // Destroy old sparklines
+  Object.keys(chartInstances).filter(k=>k.startsWith('spark')).forEach(k=>{chartInstances[k].destroy();delete chartInstances[k]});
+
+  grid.innerHTML = list.map(p=>{
+    const riskClass = p.status==='critical'?'critical':p.status==='watch'?'watch':'stable';
+    const riskLabel = p.status==='critical'?'⛔ Critical':p.status==='watch'?'🟡 Watch':'✅ Stable';
+    const polarityW = Math.abs(p.polarity)/4;
+    const polarityLeft = p.polarity<0 ? (50-(polarityW*50))+'%' : '50%';
+    const polarityFillW = (polarityW*50)+'%';
+    const polarityCol = p.polarity<-2?'var(--coral)':p.polarity<0?'var(--amber)':p.polarity<2?'var(--sage-dark)':'#52D98E';
+    return `
+    <div class="pt-card ${p.flagged?'flagged-today':p.status==='watch'?'watch-card':''}" data-id="${p.id}">
+      <div class="pt-head">
+        <div class="pt-av" style="background:${p.bg};color:${p.fg};width:40px;height:40px">
+          ${p.initials}
+          ${p.status!=='stable'?`<div class="pt-av-ring ${p.status}"></div>`:''}
+        </div>
+        <div class="pt-info">
+          <div class="pt-name">${p.name}</div>
+          <div class="pt-arc">${p.arc}</div>
+        </div>
+        <span class="risk-pill ${riskClass}"><span class="rp-dot"></span>${riskLabel}</span>
+      </div>
+      <div class="spark-wrap">
+        <canvas id="spark-${p.id}" height="40"></canvas>
+        <div class="spark-label">7d mood</div>
+      </div>
+      <div class="emo-row">
+        ${p.emotions.map(e=>{
+          const dots = Array(e.int).fill(`<span class="emo-int-dot" style="background:${e.color}"></span>`).join('');
+          return `<span class="emo-tag" style="background:${e.bg};color:${e.col||'#333'};border:1px solid ${e.color}33" data-tip="Intensity: ${e.int}/4 — AI traced root available">${e.name}<span class="emo-int">${dots}</span></span>`;
+        }).join('')}
+      </div>
+      <div class="polarity-row">
+        <span class="polarity-label">Polarity</span>
+        <div class="polarity-track">
+          <div class="polarity-center"></div>
+          <div class="polarity-fill" style="left:${polarityLeft};width:${polarityFillW};background:${polarityCol}"></div>
+        </div>
+        <span class="polarity-score" style="color:${polarityCol}">${p.polarity>0?'+':''}${p.polarity}</span>
+      </div>
+      ${p.behaviors.map(b=>`<div class="behavior-tag"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>${b}</div>`).join('')}
+      <div class="pt-footer">
+        <div class="pt-check-time">Last: ${p.lastCheck}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="flyout-trigger" onclick="openFlyout(${p.id},event)">
+            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Full profile
+          </div>
+          <div class="micro-actions">
+            <button class="micro-btn positive" title="Doing better" onclick="event.stopPropagation();this.textContent='✅'">👍</button>
+            <button class="micro-btn alert" title="Needs focus" onclick="event.stopPropagation();this.textContent='⚠️'">🔎</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Draw sparklines
+  list.forEach(p=>{
+    const canvas = document.getElementById(`spark-${p.id}`);
+    if(!canvas) return;
+    const col = p.status==='critical'?'#FA6E6E':p.status==='watch'?'#F6BE00':'#7A9E7E';
+    chartInstances[`spark-${p.id}`] = new Chart(canvas,{
+      type:'line',
+      data:{
+        labels:p.mood.map((_,i)=>i),
+        datasets:[{data:p.mood,borderColor:col,borderWidth:2,pointRadius:0,tension:0.4,fill:true,backgroundColor:col+'18'}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false,min:0,max:10}},animation:{duration:300}}
+    });
+  });
+}
+
+function renderAlerts(){
+  document.getElementById('alerts-list').innerHTML = ALERTS.map(a=>`
+    <div class="alert-item ${a.sev}">
+      <div class="ai-sev ${a.sev}"></div>
+      <div class="ai-body">
+        <div class="ai-patient">${a.name}</div>
+        <div class="ai-title">${a.title}</div>
+        <div class="ai-desc">${a.desc}</div>
+        <span class="ai-cluster">${a.cluster}</span>
+        <div class="ai-actions">
+          ${a.sev==='critical'?'<button class="aib red">Escalate</button>':''}
+          <button class="aib">Mark Safe</button>
+          <button class="aib">Snooze 24h</button>
+          <button class="aib">View Patient</button>
+        </div>
+      </div>
+      <div class="ai-time">${a.time}</div>
+    </div>
+  `).join('');
+}
+
+function renderChat(){
+  document.getElementById('chat-stream').innerHTML = MESSAGES.map(m=>{
+    const isPt = m.type==='pt';
+    const sentCol = m.sent<-0.6?'#FA6E6E':m.sent<0?'#F6BE00':var_='var(--sage)';
+    let txt = m.text;
+    if(m.kw) txt=txt.replace(m.kw,`<span class="kw-highlight">${m.kw}</span>`);
+    return `
+    <div class="msg-row" style="${!isPt?'flex-direction:row-reverse':''}">
+      <div class="msg-av" style="background:${isPt?'#E8F0F7':'#E0F2F1'};color:${isPt?'#1C2E3E':'#00695C'}">${isPt?'SL':'AI'}</div>
+      <div class="msg-wrap" style="${!isPt?'align-items:flex-end;display:flex;flex-direction:column':''}">
+        <div class="msg-bubble${m.flagged?' flagged':''}">
+          <div class="msg-text">${txt}</div>
+          ${m.flagged?`<div class="kw-flag">⚑ Flagged · ${m.sent}</div>`:''}
+          <div class="sent-bar" style="background:${m.sent<0?'var(--coral)':'var(--sage)'}33"><div style="height:100%;width:${Math.abs(m.sent)*100}%;background:${m.sent<0?'var(--coral)':'var(--sage)'};border-radius:2px"></div></div>
+        </div>
+        <div class="msg-time">${m.time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGoals(){
+  document.getElementById('goals-list').innerHTML = GOALS.map((g,i)=>`
+    <div class="goal-item" onclick="goalsDone[${i}]=!goalsDone[${i}];renderGoals()">
+      <div class="goal-check${goalsDone[i]?' done':''}"></div>
+      <div class="goal-text${goalsDone[i]?' done':''}">${g}</div>
+    </div>
+  `).join('');
+}
+
+function renderWordCloud(){
+  const el = document.getElementById('word-cloud');
+  if(!el) return;
+  el.innerHTML = WORD_DATA.map(w=>`
+    <div style="background:${w.bg};color:${w.col};font-size:${w.sz*0.52}px;padding:4px 12px;border-radius:20px;border:1px solid ${w.col}22;cursor:pointer;transition:transform 130ms;font-weight:${w.sz>20?600:400}" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${w.word}</div>
+  `).join('');
+}
+
+function renderRightCol(){
+  // Tipping
+  document.getElementById('tipping-list').innerHTML = TIPPING.map(t=>`
+    <div class="tipping-item">
+      <div class="ti-av" style="background:${t.bg};color:${t.fg}">${t.initials}</div>
+      <div>
+        <div class="ti-name">${t.name}</div>
+        <div class="ti-signal">${t.signal}</div>
+      </div>
+      <div class="ti-badge" style="background:${t.riskBg};color:${t.riskColor}">${t.risk}</div>
+    </div>
+  `).join('');
+
+  // Patterns
+  document.getElementById('pattern-list').innerHTML = PATTERNS.map(p=>`
+    <div class="pattern-row">
+      <div class="pattern-label">${p.label}</div>
+      <div class="pattern-bar-wrap"><div class="pattern-bar-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
+      <div class="pattern-count">${p.count}</div>
+    </div>
+  `).join('');
+
+  // Latency
+  document.getElementById('latency-list').innerHTML = LATENCY.map(l=>`
+    <div class="el-item">
+      <div class="el-name">${l.name}</div>
+      <div class="el-time" style="color:${l.color}">${l.time}</div>
+    </div>
+  `).join('');
+
+  // Burnout gauge
+  setTimeout(()=>{
+    const canvas = document.getElementById('burnoutGauge');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const cx=70,cy=72,r=52;
+    ctx.clearRect(0,0,140,80);
+    // Track
+    ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);ctx.strokeStyle='#E5E2DC';ctx.lineWidth=10;ctx.lineCap='round';ctx.stroke();
+    // Fill 32%
+    const ang = Math.PI + (0.32*Math.PI);
+    ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,ang);ctx.strokeStyle='#7A9E7E';ctx.lineWidth=10;ctx.stroke();
+  },100);
+}
+
+// ── FLYOUT ────────────────────────────────────────────────────────────────────
+let flyoutChart = null;
+function openFlyout(id, e){
+  if(e) e.stopPropagation();
+  const p = PTS.find(x=>x.id===id);
+  if(!p) return;
+
+  document.getElementById('fl-av').style.cssText=`background:${p.bg};color:${p.fg};width:44px;height:44px;font-size:17px`;
+  document.getElementById('fl-av').textContent=p.initials;
+  document.getElementById('fl-name').textContent=p.name;
+  document.getElementById('fl-arc').textContent=p.arc;
+  document.getElementById('fl-badge').innerHTML=`<span class="risk-pill ${p.status}"><span class="rp-dot"></span>${p.status.charAt(0).toUpperCase()+p.status.slice(1)}</span>`;
+  document.getElementById('fl-insights').innerHTML=p.insights.map(i=>`<div class="fl-insight"><div class="fl-insight-label">AI Insight</div><div class="fl-insight-text">${i}</div></div>`).join('');
+  document.getElementById('fl-reasoning').textContent=p.reasoning;
+
+  document.getElementById('flyout').classList.add('open');
+
+  // Flyout chart
+  setTimeout(()=>{
+    const container=document.querySelector('.flyout-body .fl-section');
+    let cv=document.getElementById('flyoutChart');
+    if(!cv){cv=document.createElement('canvas');cv.id='flyoutChart';cv.height=90;container.appendChild(cv);}
+    if(flyoutChart){flyoutChart.destroy();}
+    const col=p.status==='critical'?'#FA6E6E':p.status==='watch'?'#F6BE00':'#7A9E7E';
+    flyoutChart=new Chart(cv,{type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{data:p.mood,borderColor:col,backgroundColor:col+'22',borderWidth:2.5,pointRadius:3,pointBackgroundColor:col,tension:0.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Mood: ${ctx.raw}/10`}}},scales:{x:{ticks:{font:{size:10},color:'#8A9BAB'},grid:{display:false}},y:{min:0,max:10,display:false}},animation:{duration:400}}});
+  },50);
+}
+
+function closeFlyout(){
+  document.getElementById('flyout').classList.remove('open');
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+function initMoodChart(){
+  const canvas = document.getElementById('moodChart');
+  if(!canvas || chartInstances.moodChart) return;
+  chartInstances.moodChart = new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:['Oct 8','Oct 9','Oct 10','Oct 11','Oct 12','Oct 13','Oct 14'],
+      datasets:[
+        {label:'Mood',data:[6,5,7,4,4,3,4],borderColor:'#1C2E3E',backgroundColor:'rgba(28,46,62,.07)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#1C2E3E',tension:0.4,fill:true},
+        {label:'Sentiment',data:[0.3,0.1,0.4,-0.2,-0.3,-0.5,-0.4],borderColor:'#F6BE00',borderWidth:2,pointRadius:3,tension:0.4,borderDash:[5,3],fill:false,yAxisID:'y1'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1C2E3E',titleFont:{size:11},bodyFont:{size:11},padding:8}},
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.03)'},ticks:{font:{family:'DM Sans',size:11},color:'#8A9BAB'}},
+        y:{grid:{color:'rgba(0,0,0,.03)'},min:0,max:10,ticks:{font:{size:11},color:'#8A9BAB'}},
+        y1:{position:'right',grid:{display:false},min:-1,max:1,ticks:{font:{size:11},color:'#8A9BAB'}}
+      }
+    }
+  });
+}
+
+function initTimingChart(){
+  const canvas = document.getElementById('timingChart');
+  if(!canvas || chartInstances.timingChart) return;
+  chartInstances.timingChart = new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels:['M1','M2','M3','M4','M5'],
+      datasets:[{data:[0,1,3,8,9],backgroundColor:['rgba(28,46,62,.2)','rgba(28,46,62,.3)','rgba(246,190,0,.5)','rgba(250,110,110,.65)','rgba(250,110,110,.8)'],borderRadius:3,borderSkipped:false}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} min gap`}}},scales:{x:{display:false},y:{display:false}}}
+  });
+}
+
+function initAlertChart(){
+  const canvas = document.getElementById('alertChart');
+  if(!canvas || chartInstances.alertChart) return;
+  chartInstances.alertChart = new Chart(canvas,{
+    type:'doughnut',
+    data:{
+      labels:['Critical','Warning','Info'],
+      datasets:[{data:[2,2,1],backgroundColor:['#FA6E6E','#F6BE00','#A5BDA8'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}}},cutout:'65%'}
+  });
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+const VIEW_META={patients:{title:'Patient Overview',bc:'Patients'},timeline:{title:'Cognitive Timeline',bc:'Timeline'},chat:{title:'Chat Analyzer',bc:'Chat'},narrative:{title:'Narrative Map',bc:'Narrative'},insights:{title:'Insights & Plans',bc:'Insights'},alerts:{title:'Alert Center',bc:'Alerts'}};
+
+function showView(name, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.sb-item').forEach(n=>{if(n.getAttribute('onclick')?.includes(`'${name}'`))n.classList.add('active')});
+  const m=VIEW_META[name]||{title:name,bc:name};
+  document.getElementById('page-title').textContent=m.title;
+  document.getElementById('breadcrumb-page').textContent=m.bc;
+
+  if(name==='timeline') setTimeout(initMoodChart,50);
+  if(name==='chat'){setTimeout(()=>{initTimingChart();renderChat();},50);}
+  if(name==='insights') renderGoals();
+  if(name==='narrative') renderWordCloud();
+  if(name==='alerts'){setTimeout(()=>{renderAlerts();initAlertChart();},30);}
+}
+
+function filterPts(f,btn){
+  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderPatients(f);
+}
+
+function toggleExplain(){
+  document.getElementById('explain-box').classList.toggle('open');
+}
+
+// ── COPILOT ───────────────────────────────────────────────────────────────────
+let copilotOpen = true;
+function toggleCopilot(){
+  copilotOpen = !copilotOpen;
+  document.getElementById('copilot-card').classList.toggle('hidden',!copilotOpen);
+}
+function dismissCopilot(){
+  document.getElementById('copilot-card').classList.add('hidden');
+  copilotOpen=false;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderPatients();
+renderRightCol();
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus();}if(e.key==='Escape')closeFlyout();});
+</script>
+</body>
+</html>
