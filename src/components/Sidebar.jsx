@@ -28,7 +28,7 @@ export default function Sidebar({ activeView, onViewChange }) {
             <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
           <div>
-            <div className="sb-wordmark">Lumid</div>
+            <div className="sb-wordmark">Hopemo Ai</div>
             <div className="sb-tagline">Emotional OS</div>
           </div>
         </div>

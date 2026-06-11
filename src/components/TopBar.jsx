@@ -15,7 +15,7 @@ export default function TopBar({ activeView }) {
     <header className="topbar">
       <div>
         <div className="topbar-title">{m.title}</div>
-        <div className="breadcrumb"><span>Lumid</span><span className="breadcrumb-sep">›</span><span>{m.bc}</span></div>
+        <div className="breadcrumb"><span>Hopemo Ai</span><span className="breadcrumb-sep">›</span><span>{m.bc}</span></div>
       </div>
       <div className="search">
         <svg viewBox="0 0 24 24" fill="none" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
